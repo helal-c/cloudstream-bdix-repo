@@ -21,3 +21,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         jvmTarget = "1.8"
     }
 }
+
+dependencies {
+    compileOnly("com.github.recloudstream:cloudstream:master-SNAPSHOT")
+}
