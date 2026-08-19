@@ -1,7 +1,8 @@
 package com.xtremex.ftp
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.Qualities
 
 class XtremexFtpProvider : MainAPI() {
     override var mainUrl = "https://xtremexbd.com"
@@ -52,29 +53,27 @@ class XtremexFtpProvider : MainAPI() {
                     "Netflix & OTT Mirrors" -> "https://assets.nflxext.com/ffe/siteui/common/icons/monogram/48x48.png"
                     else -> "https://raw.githubusercontent.com/google/material-design-icons/master/png/file/folder/materialicons/48dp/2x/baseline_folder_black_48dp.png"
                 }
-                MovieSearchResponse(
+                newMovieSearchResponse(
                     name = server.name,
                     url = server.url,
-                    apiName = this@XtremexFtpProvider.name,
-                    type = TvType.Movie,
-                    posterUrl = poster
-                )
+                    type = TvType.Movie
+                ) {
+                    this.posterUrl = poster
+                }
             }
             HomePageList(catTitle, items)
         }
-        return HomePageResponse(homeLists)
+        return newHomePageResponse(homeLists, hasNext = false)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
         return allFtpList.filter { serverObj -> 
             serverObj.name.contains(query, ignoreCase = true) || serverObj.url.contains(query, ignoreCase = true) 
         }.map { server -> 
-            MovieSearchResponse(
+            newMovieSearchResponse(
                 name = server.name,
                 url = server.url,
-                apiName = this@XtremexFtpProvider.name,
-                type = TvType.Movie,
-                posterUrl = null
+                type = TvType.Movie
             )
         }
     }
@@ -82,46 +81,44 @@ class XtremexFtpProvider : MainAPI() {
     override suspend fun load(url: String): LoadResponse {
         val targetServer = allFtpList.find { serverObj -> serverObj.url == url }
         val defaultTitle = targetServer?.name ?: "Media Server"
-        
+
         return try {
             val doc = app.get(url, timeout = 4).document
             val title = doc.selectFirst("h1, h2, .title")?.text() ?: defaultTitle
             val poster = doc.selectFirst("img.poster, meta[property=og:image]")?.attr("src")
 
-            val response = MovieLoadResponse(
+            newMovieLoadResponse(
                 name = title,
                 url = url,
-                apiName = this@XtremexFtpProvider.name,
                 type = TvType.Movie,
                 dataUrl = url
-            )
-            response.posterUrl = poster
-            response.plot = "Streaming from $defaultTitle ($url)"
-            response
+            ) {
+                this.posterUrl = poster
+                this.plot = "Streaming from $defaultTitle ($url)"
+            }
         } catch (e: Exception) {
-            val response = MovieLoadResponse(
+            newMovieLoadResponse(
                 name = defaultTitle,
                 url = url,
-                apiName = this@XtremexFtpProvider.name,
                 type = TvType.Movie,
                 dataUrl = url
-            )
-            response.plot = "Direct Connection: $url"
-            response
+            ) {
+                this.plot = "Direct Connection: $url"
+            }
         }
     }
 
     override suspend fun loadLinks(
-        data: String, 
-        isCasting: Boolean, 
-        subtitleCallback: (SubtitleFile) -> Unit, 
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         return try {
             val doc = app.get(data, timeout = 5).document
             val mediaElements = doc.select("a, iframe, video source")
             val mediaFiles = ArrayList<String>()
-            
+
             for (element in mediaElements) {
                 var link = element.attr("src")
                 if (link.isEmpty()) {
@@ -140,32 +137,29 @@ class XtremexFtpProvider : MainAPI() {
                         link.startsWith("//") -> "https:$link"
                         else -> java.net.URI(data).resolve(link).toString()
                     }
-                    
                     callback(
-                        newExtractorLink(
+                        ExtractorLink(
                             source = this@XtremexFtpProvider.name,
                             name = "Stream #$idx",
-                            url = fullUrl
-                        ) {
-                            referer = data
-                            quality = Qualities.P1080.value
+                            url = fullUrl,
+                            referer = data,
+                            quality = Qualities.P1080.value,
                             isM3u8 = fullUrl.contains(".m3u8")
-                        }
+                        )
                     )
                     idx++
                 }
                 true
             } else {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = this@XtremexFtpProvider.name,
                         name = "Direct Stream",
-                        url = data
-                    ) {
-                        referer = ""
-                        quality = Qualities.P1080.value
+                        url = data,
+                        referer = "",
+                        quality = Qualities.P1080.value,
                         isM3u8 = data.contains(".m3u8")
-                    }
+                    )
                 )
                 true
             }
