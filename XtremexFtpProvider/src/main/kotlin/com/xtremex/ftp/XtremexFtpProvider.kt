@@ -55,7 +55,7 @@ class XtremexFtpProvider : MainAPI() {
         val grouped = allFtpList.groupBy { it.category }
         val homeLists = grouped.map { (catTitle, servers) ->
             val items = servers.map { server ->
-                newMovieSearchResponse(server.name, server.url, TvType.Movie) {
+                newMovieSearchResponse(server.name, server.url) {
                     this.posterUrl = when (server.category) {
                         "Anime Hub" -> "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Anime_eye.svg/1024px-Anime_eye.svg.png"
                         "Netflix & OTT Mirrors" -> "https://assets.nflxext.com/ffe/siteui/common/icons/monogram/48x48.png"
@@ -70,7 +70,7 @@ class XtremexFtpProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         return allFtpList.filter { it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true) }
-            .map { server -> newMovieSearchResponse(server.name, server.url, TvType.Movie) }
+            .map { server -> newMovieSearchResponse(server.name, server.url) }
     }
 
     override suspend fun load(url: String): LoadResponse {
@@ -80,12 +80,14 @@ class XtremexFtpProvider : MainAPI() {
             val title = doc.selectFirst("h1, h2, .title")?.text() ?: targetServer?.name ?: "Media Server"
             val poster = doc.selectFirst("img.poster, meta[property=og:image]")?.attr("src")
 
-            newMovieLoadResponse(title, url, TvType.Movie, url) {
+            newMovieLoadResponse(title, url) {
                 this.posterUrl = poster
                 this.plot = "Streaming from ${targetServer?.name} ($url)"
             }
         } catch (e: Exception) {
-            newMovieLoadResponse(targetServer?.name ?: "Server", url, TvType.Movie, url) { this.plot = "Direct Connection: $url" }
+            newMovieLoadResponse(targetServer?.name ?: "Server", url) {
+                this.plot = "Direct Connection: $url"
+            }
         }
     }
 
