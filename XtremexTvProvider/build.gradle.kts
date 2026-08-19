@@ -23,5 +23,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 dependencies {
-    compileOnly("com.github.recloudstream.cloudstream:library-android:-SNAPSHOT")
+    implementation("com.github.recloudstream.cloudstream:library:-SNAPSHOT")
+    implementation("com.github.recloudstream.cloudstream:library-android:-SNAPSHOT")
 }
