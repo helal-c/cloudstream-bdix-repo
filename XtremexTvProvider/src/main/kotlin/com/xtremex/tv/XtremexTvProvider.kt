@@ -1,7 +1,8 @@
 package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.Qualities
 
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
@@ -37,43 +38,42 @@ class XtremexTvProvider : MainAPI() {
         val categories = tvServers.groupBy { serverObj -> serverObj.category }
         val homeLists = categories.map { (catName, servers) ->
             val responses = servers.map { server ->
-                LiveSearchResponse(
+                newLiveSearchResponse(
                     name = server.name,
                     url = server.url,
-                    apiName = this@XtremexTvProvider.name,
-                    type = TvType.Live,
-                    posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
-                )
+                    type = TvType.Live
+                ) {
+                    this.posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
+                }
             }
             HomePageList(catName, responses)
         }
-        return HomePageResponse(homeLists)
+        return newHomePageResponse(homeLists, hasNext = false)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
         return tvServers.filter { serverObj -> serverObj.name.contains(query, ignoreCase = true) }.map { server ->
-            LiveSearchResponse(
+            newLiveSearchResponse(
                 name = server.name,
                 url = server.url,
-                apiName = this@XtremexTvProvider.name,
-                type = TvType.Live,
-                posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
-            )
+                type = TvType.Live
+            ) {
+                this.posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
+            }
         }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val server = tvServers.find { serverObj -> serverObj.url == url }
         val title = server?.name ?: "BDIX Live TV"
-        
-        val response = LiveStreamLoadResponse(
+
+        return newLiveStreamLoadResponse(
             name = title,
             url = url,
-            apiName = this@XtremexTvProvider.name,
             dataUrl = url
-        )
-        response.plot = "Direct BDIX Local TV Stream via Xtreme'x Network."
-        return response
+        ) {
+            this.plot = "Direct BDIX Local TV Stream via Xtreme'x Network."
+        }
     }
 
     override suspend fun loadLinks(
@@ -84,21 +84,20 @@ class XtremexTvProvider : MainAPI() {
     ): Boolean {
         return try {
             val doc = app.get(data, timeout = 5).document
-
             val directStream = doc.selectFirst("video source")?.attr("src")
                 ?: doc.selectFirst("video")?.attr("src")
                 ?: doc.html().substringAfter("source: '", "").substringBefore("'")
 
             if (directStream.isBlank()) {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = this@XtremexTvProvider.name,
                         name = "${this@XtremexTvProvider.name} Direct Link",
-                        url = data
-                    ) {
-                        referer = data
-                        quality = Qualities.P1080.value
-                    }
+                        url = data,
+                        referer = data,
+                        quality = Qualities.P1080.value,
+                        isM3u8 = data.contains(".m3u8")
+                    )
                 )
                 return true
             }
@@ -110,29 +109,26 @@ class XtremexTvProvider : MainAPI() {
             }
 
             callback(
-                newExtractorLink(
+                ExtractorLink(
                     source = this@XtremexTvProvider.name,
                     name = "${this@XtremexTvProvider.name} Stream",
-                    url = finalUrl
-                ) {
-                    referer = data
-                    quality = Qualities.P1080.value
+                    url = finalUrl,
+                    referer = data,
+                    quality = Qualities.P1080.value,
                     isM3u8 = finalUrl.contains(".m3u8")
-                }
+                )
             )
             true
-
         } catch (e: Exception) {
             callback(
-                newExtractorLink(
+                ExtractorLink(
                     source = this@XtremexTvProvider.name,
                     name = "${this@XtremexTvProvider.name} Direct Link",
-                    url = data
-                ) {
-                    referer = data
-                    quality = Qualities.P1080.value
+                    url = data,
+                    referer = data,
+                    quality = Qualities.P1080.value,
                     isM3u8 = data.contains(".m3u8")
-                }
+                )
             )
             true
         }
