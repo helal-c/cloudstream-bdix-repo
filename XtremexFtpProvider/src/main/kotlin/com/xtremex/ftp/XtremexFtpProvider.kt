@@ -3,8 +3,6 @@ package com.xtremex.ftp
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
 
 class XtremexFtpProvider : MainAPI() {
     override var mainUrl = "https://xtremexbd.com"
