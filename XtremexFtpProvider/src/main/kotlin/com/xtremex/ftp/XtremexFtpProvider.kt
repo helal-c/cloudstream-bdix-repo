@@ -20,7 +20,7 @@ class XtremexFtpProvider : MainAPI() {
         BDFtpServer("KickassAnime", "https://kaas.to/", "Anime Hub"),
         BDFtpServer("Circle FTP - Anime", "http://main.circleftp.net/anime/", "Anime Hub"),
         BDFtpServer("ICC FTP - Anime", "http://10.16.100.244/dashboard.php?category=anime", "Anime Hub"),
-        
+
         // Netflix Mirrors
         BDFtpServer("Netflix Mirror", "https://netmirror.app/", "Netflix & OTT Mirrors"),
         BDFtpServer("FlixHQ", "https://flixhq.to/", "Netflix & OTT Mirrors"),
@@ -37,7 +37,7 @@ class XtremexFtpProvider : MainAPI() {
         BDFtpServer("Movie Haat", "https://moviehaat.net/", "Popular Mega FTP"),
         BDFtpServer("Natural BD FTP", "http://naturalbd.com/", "Popular Mega FTP"),
         BDFtpServer("Elaach Media", "http://elaach.com/", "Popular Mega FTP"),
-        
+
         // Local IP Servers & BDIX Portals
         BDFtpServer("ICC Local Server", "http://10.16.100.244/", "Local IP Servers"),
         BDFtpServer("IBCCL Media", "http://103.203.93.2/", "Local IP Servers"),
@@ -55,7 +55,7 @@ class XtremexFtpProvider : MainAPI() {
         val grouped = allFtpList.groupBy { it.category }
         val homeLists = grouped.map { (catTitle, servers) ->
             val items = servers.map { server ->
-                newAnimeSearchResponse(server.name, server.url, if (server.category == "Anime Hub") TvType.Anime else TvType.Movie) {
+                newMovieSearchResponse(server.name, server.url, TvType.Movie) {
                     this.posterUrl = when (server.category) {
                         "Anime Hub" -> "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Anime_eye.svg/1024px-Anime_eye.svg.png"
                         "Netflix & OTT Mirrors" -> "https://assets.nflxext.com/ffe/siteui/common/icons/monogram/48x48.png"
@@ -70,7 +70,7 @@ class XtremexFtpProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         return allFtpList.filter { it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true) }
-            .map { server -> newAnimeSearchResponse(server.name, server.url, TvType.Movie) }
+            .map { server -> newMovieSearchResponse(server.name, server.url, TvType.Movie) }
     }
 
     override suspend fun load(url: String): LoadResponse {
@@ -108,4 +108,3 @@ class XtremexFtpProvider : MainAPI() {
         } catch (e: Exception) { false }
     }
 }
-
