@@ -80,8 +80,12 @@ class XtremexTvProvider : MainAPI() {
         return try {
             val doc = app.get(data, timeout = 5).document
             val directStream = doc.selectFirst("video source")?.attr("src") ?: doc.selectFirst("video")?.attr("src") ?: doc.html().substringAfter("source: '").substringBefore("'")
+            if (directStream.isNullOrBlank()) {
+                callback(ExtractorLink(this.name, this.name + " Direct Link", data, data, Qualities.P1080.value, data.contains(".m3u8")))
+                return true
+            }
             val finalUrl = if (directStream.startsWith("http")) directStream else fixUrl(directStream)
-            
+
             callback(ExtractorLink(this.name, this.name + " Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
             true
         } catch (e: Exception) {

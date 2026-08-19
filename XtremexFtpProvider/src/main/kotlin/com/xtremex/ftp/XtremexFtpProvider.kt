@@ -126,6 +126,9 @@ class XtremexFtpProvider : MainAPI() {
                 callback(ExtractorLink(this.name, "Direct Stream", data, "", Qualities.P1080.value, data.contains(".m3u8")))
                 true
             }
-        } catch (e: Exception) { false }
+        } catch (e: Exception) {
+            println("XtremeX FTP loadLinks error: ${e.message}")
+            false
+        }
     }
 }
