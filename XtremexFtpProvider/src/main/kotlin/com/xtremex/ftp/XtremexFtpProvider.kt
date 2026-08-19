@@ -119,11 +119,29 @@ class XtremexFtpProvider : MainAPI() {
             if (mediaFiles.isNotEmpty()) {
                 mediaFiles.take(10).forEachIndexed { idx, link ->
                     val fullUrl = if (link.startsWith("http")) link else fixUrl(link)
-                    callback(ExtractorLink(this.name, "Stream #${idx + 1}", fullUrl, data, Qualities.P1080.value, fullUrl.contains(".m3u8")))
+                    callback(
+                        ExtractorLink(
+                            source = this.name,
+                            name = "Stream #${idx + 1}",
+                            url = fullUrl,
+                            referer = data,
+                            quality = Qualities.P1080.value,
+                            isM3u8 = fullUrl.contains(".m3u8")
+                        )
+                    )
                 }
                 true
             } else {
-                callback(ExtractorLink(this.name, "Direct Stream", data, "", Qualities.P1080.value, data.contains(".m3u8")))
+                callback(
+                    ExtractorLink(
+                        source = this.name,
+                        name = "Direct Stream",
+                        url = data,
+                        referer = "",
+                        quality = Qualities.P1080.value,
+                        isM3u8 = data.contains(".m3u8")
+                    )
+                )
                 true
             }
         } catch (e: Exception) {
