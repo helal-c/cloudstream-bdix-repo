@@ -6,22 +6,34 @@ plugins {
 
 android {
     namespace = "com.xtremex.tv"
-    compileSdk = 34
+
+    compileSdk = 35
+
     defaultConfig {
         minSdk = 21
+        targetSdk = 35
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile> {
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+        )
     }
 }
 
 dependencies {
-    compileOnly("com.github.recloudstream:cloudstream:master-SNAPSHOT")
+    implementation("com.github.recloudstream.cloudstream:library:-SNAPSHOT")
+
+    implementation(kotlin("stdlib"))
+
+    implementation("com.github.Blatzar:NiceHttp:0.4.11")
+
+    implementation("org.jsoup:jsoup:1.18.3")
 }
