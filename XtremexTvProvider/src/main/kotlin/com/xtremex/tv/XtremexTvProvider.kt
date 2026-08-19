@@ -3,8 +3,6 @@ package com.xtremex.tv
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
 
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
@@ -37,7 +35,7 @@ class XtremexTvProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val categories = tvServers.groupBy { serverObj -> serverObj.category }
+        val categories = tvServers.groupBy { it.category }
         val homeLists = categories.map { (catName, servers) ->
             val responses = servers.map { server ->
                 LiveSearchResponse(
@@ -54,7 +52,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        return tvServers.filter { serverObj -> serverObj.name.contains(query, ignoreCase = true) }.map { server ->
+        return tvServers.filter { it.name.contains(query, ignoreCase = true) }.map { server ->
             LiveSearchResponse(
                 name = server.name,
                 url = server.url,
@@ -66,7 +64,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val server = tvServers.find { serverObj -> serverObj.url == url }
+        val server = tvServers.find { it.url == url }
         val title = server?.name ?: "BDIX Live TV"
         
         val response = LiveStreamLoadResponse(
