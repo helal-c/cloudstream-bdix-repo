@@ -44,7 +44,7 @@ class XtremexFtpProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val grouped = allFtpList.groupBy { it.category }
+        val grouped = allFtpList.groupBy { serverObj -> serverObj.category }
         val homeLists = grouped.map { (catTitle, servers) ->
             val items = servers.map { server ->
                 val poster = when (server.category) {
@@ -66,20 +66,21 @@ class XtremexFtpProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        return allFtpList.filter { it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true) }
-            .map { server -> 
-                MovieSearchResponse(
-                    name = server.name,
-                    url = server.url,
-                    apiName = this@XtremexFtpProvider.name,
-                    type = TvType.Movie,
-                    posterUrl = null
-                )
-            }
+        return allFtpList.filter { serverObj -> 
+            serverObj.name.contains(query, ignoreCase = true) || serverObj.url.contains(query, ignoreCase = true) 
+        }.map { server -> 
+            MovieSearchResponse(
+                name = server.name,
+                url = server.url,
+                apiName = this@XtremexFtpProvider.name,
+                type = TvType.Movie,
+                posterUrl = null
+            )
+        }
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val targetServer = allFtpList.find { it.url == url }
+        val targetServer = allFtpList.find { serverObj -> serverObj.url == url }
         val defaultTitle = targetServer?.name ?: "Media Server"
         
         return try {
@@ -113,22 +114,34 @@ class XtremexFtpProvider : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         return try {
             val doc = app.get(data, timeout = 5).document
-            val mediaFiles = doc.select("a, iframe, video source").map { it.attr("src").ifEmpty { it.attr("href") } }
-                .filter { it.endsWith(".mp4") || it.endsWith(".mkv") || it.contains(".m3u8") || it.contains("/stream/") || it.contains("/storage/") }
+            val mediaElements = doc.select("a, iframe, video source")
+            val mediaFiles = ArrayList<String>()
+            
+            for (element in mediaElements) {
+                var link = element.attr("src")
+                if (link.isEmpty()) {
+                    link = element.attr("href")
+                }
+                if (link.endsWith(".mp4") || link.endsWith(".mkv") || link.contains(".m3u8") || link.contains("/stream/") || link.contains("/storage/")) {
+                    mediaFiles.add(link)
+                }
+            }
 
             if (mediaFiles.isNotEmpty()) {
-                mediaFiles.take(10).forEachIndexed { idx, link ->
+                var idx = 1
+                for (link in mediaFiles.take(10)) {
                     val fullUrl = if (link.startsWith("http")) link else fixUrl(link)
                     callback(
                         ExtractorLink(
                             source = this.name,
-                            name = "Stream #${idx + 1}",
+                            name = "Stream #$idx",
                             url = fullUrl,
                             referer = data,
                             quality = Qualities.P1080.value,
                             isM3u8 = fullUrl.contains(".m3u8")
                         )
                     )
+                    idx++
                 }
                 true
             } else {
@@ -145,7 +158,6 @@ class XtremexFtpProvider : MainAPI() {
                 true
             }
         } catch (e: Exception) {
-            println("XtremeX FTP loadLinks error: ${e.message}")
             false
         }
     }
