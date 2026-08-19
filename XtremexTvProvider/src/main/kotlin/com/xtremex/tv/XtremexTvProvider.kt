@@ -1,8 +1,7 @@
 package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
@@ -96,7 +95,7 @@ class XtremexTvProvider : MainAPI() {
                         url = data,
                         referer = data,
                         quality = Qualities.P1080.value,
-                        isM3u8 = data.contains(".m3u8")
+                        type = if (data.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                     )
                 )
                 return true
@@ -115,7 +114,7 @@ class XtremexTvProvider : MainAPI() {
                     url = finalUrl,
                     referer = data,
                     quality = Qualities.P1080.value,
-                    isM3u8 = finalUrl.contains(".m3u8")
+                    type = if (finalUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                 )
             )
             true
@@ -127,7 +126,7 @@ class XtremexTvProvider : MainAPI() {
                     url = data,
                     referer = data,
                     quality = Qualities.P1080.value,
-                    isM3u8 = data.contains(".m3u8")
+                    type = if (data.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                 )
             )
             true
