@@ -1,8 +1,7 @@
 package com.xtremex.ftp
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 
 class XtremexFtpProvider : MainAPI() {
     override var mainUrl = "https://xtremexbd.com"
@@ -144,7 +143,7 @@ class XtremexFtpProvider : MainAPI() {
                             url = fullUrl,
                             referer = data,
                             quality = Qualities.P1080.value,
-                            isM3u8 = fullUrl.contains(".m3u8")
+                            type = if (fullUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                         )
                     )
                     idx++
@@ -158,7 +157,7 @@ class XtremexFtpProvider : MainAPI() {
                         url = data,
                         referer = "",
                         quality = Qualities.P1080.value,
-                        isM3u8 = data.contains(".m3u8")
+                        type = if (data.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                     )
                 )
                 true
