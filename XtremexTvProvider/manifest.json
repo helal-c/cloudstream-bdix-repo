@@ -1,1 +1,10 @@
+{
+  "name": "Xtreme'x Live TV",
+  "pluginClassName": "com.xtremex.tv.XtremexTvPlugin",
+  "authors": ["Xtreme'x Communication"],
+  "description": "18+ BDIX & Local Live TV Channels including XTREMEX TV, Sports 1/2, BdCinema, QUICK TV, and CLOUD TV.",
+  "version": 1,
+  "types": ["LiveStream"],
+  "iconUrl": "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
+}
 
