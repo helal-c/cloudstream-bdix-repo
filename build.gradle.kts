@@ -1,7 +1,14 @@
-plugins {
-    id("com.android.library") version "8.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
-    id("com.lagradost.cloudstream3.gradle") version "master-SNAPSHOT" apply false
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.2.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("com.github.recloudstream:gradle:master-SNAPSHOT")
+    }
 }
 
 allprojects {
@@ -10,4 +17,8 @@ allprojects {
         mavenCentral()
         maven("https://jitpack.io")
     }
+}
+
+tasks.register<Delete>("clean") {
+    delete(rootProject.layout.buildDirectory)
 }
