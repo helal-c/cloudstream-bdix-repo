@@ -14,20 +14,15 @@ class XtremexFtpProvider : MainAPI() {
     data class BDFtpServer(val name: String, val url: String, val category: String)
 
     private val allFtpList = listOf(
-        // Anime Hub
         BDFtpServer("Aniwatch (Zoro)", "https://aniwatchtv.to/", "Anime Hub"),
         BDFtpServer("GogoAnime", "https://gogoanime3.co/", "Anime Hub"),
         BDFtpServer("KickassAnime", "https://kaas.to/", "Anime Hub"),
         BDFtpServer("Circle FTP - Anime", "http://main.circleftp.net/anime/", "Anime Hub"),
         BDFtpServer("ICC FTP - Anime", "http://10.16.100.244/dashboard.php?category=anime", "Anime Hub"),
-
-        // Netflix Mirrors
         BDFtpServer("Netflix Mirror", "https://netmirror.app/", "Netflix & OTT Mirrors"),
         BDFtpServer("FlixHQ", "https://flixhq.to/", "Netflix & OTT Mirrors"),
         BDFtpServer("Cinefreak BD", "https://cinefreak.net/", "Netflix & OTT Mirrors"),
         BDFtpServer("Banglaplex", "https://banglaplex.lat/", "Netflix & OTT Mirrors"),
-
-        // Popular Mega Networks
         BDFtpServer("Wow FTP", "http://172.27.27.84/", "Popular Mega FTP"),
         BDFtpServer("Circle FTP (New)", "http://new.circleftp.net/", "Popular Mega FTP"),
         BDFtpServer("Circle FTP (Old)", "http://main.circleftp.net/", "Popular Mega FTP"),
@@ -37,8 +32,6 @@ class XtremexFtpProvider : MainAPI() {
         BDFtpServer("Movie Haat", "https://moviehaat.net/", "Popular Mega FTP"),
         BDFtpServer("Natural BD FTP", "http://naturalbd.com/", "Popular Mega FTP"),
         BDFtpServer("Elaach Media", "http://elaach.com/", "Popular Mega FTP"),
-
-        // Local IP Servers & BDIX Portals
         BDFtpServer("ICC Local Server", "http://10.16.100.244/", "Local IP Servers"),
         BDFtpServer("IBCCL Media", "http://103.203.93.2/", "Local IP Servers"),
         BDFtpServer("Ghuri Media FTP", "http://103.96.104.6/", "Local IP Servers"),
@@ -55,13 +48,18 @@ class XtremexFtpProvider : MainAPI() {
         val grouped = allFtpList.groupBy { it.category }
         val homeLists = grouped.map { (catTitle, servers) ->
             val items = servers.map { server ->
-                newMovieSearchResponse(server.name, server.url) {
-                    this.posterUrl = when (server.category) {
-                        "Anime Hub" -> "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Anime_eye.svg/1024px-Anime_eye.svg.png"
-                        "Netflix & OTT Mirrors" -> "https://assets.nflxext.com/ffe/siteui/common/icons/monogram/48x48.png"
-                        else -> "https://raw.githubusercontent.com/google/material-design-icons/master/png/file/folder/materialicons/48dp/2x/baseline_folder_black_48dp.png"
-                    }
+                val poster = when (server.category) {
+                    "Anime Hub" -> "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Anime_eye.svg/1024px-Anime_eye.svg.png"
+                    "Netflix & OTT Mirrors" -> "https://assets.nflxext.com/ffe/siteui/common/icons/monogram/48x48.png"
+                    else -> "https://raw.githubusercontent.com/google/material-design-icons/master/png/file/folder/materialicons/48dp/2x/baseline_folder_black_48dp.png"
                 }
+                MovieSearchResponse(
+                    name = server.name,
+                    url = server.url,
+                    apiName = this@XtremexFtpProvider.name,
+                    type = TvType.Movie,
+                    posterUrl = poster
+                )
             }
             HomePageList(catTitle, items)
         }
@@ -70,24 +68,46 @@ class XtremexFtpProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         return allFtpList.filter { it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true) }
-            .map { server -> newMovieSearchResponse(server.name, server.url) }
+            .map { server -> 
+                MovieSearchResponse(
+                    name = server.name,
+                    url = server.url,
+                    apiName = this@XtremexFtpProvider.name,
+                    type = TvType.Movie,
+                    posterUrl = null
+                )
+            }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val targetServer = allFtpList.find { it.url == url }
+        val defaultTitle = targetServer?.name ?: "Media Server"
+        
         return try {
             val doc = app.get(url, timeout = 4).document
-            val title = doc.selectFirst("h1, h2, .title")?.text() ?: targetServer?.name ?: "Media Server"
+            val title = doc.selectFirst("h1, h2, .title")?.text() ?: defaultTitle
             val poster = doc.selectFirst("img.poster, meta[property=og:image]")?.attr("src")
 
-            newMovieLoadResponse(title, url) {
-                this.posterUrl = poster
-                this.plot = "Streaming from ${targetServer?.name} ($url)"
-            }
+            val response = MovieLoadResponse(
+                name = title,
+                url = url,
+                apiName = this@XtremexFtpProvider.name,
+                type = TvType.Movie,
+                dataUrl = url
+            )
+            response.posterUrl = poster
+            response.plot = "Streaming from $defaultTitle ($url)"
+            response
         } catch (e: Exception) {
-            newMovieLoadResponse(targetServer?.name ?: "Server", url) {
-                this.plot = "Direct Connection: $url"
-            }
+            val response = MovieLoadResponse(
+                name = defaultTitle,
+                url = url,
+                apiName = this@XtremexFtpProvider.name,
+                type = TvType.Movie,
+                dataUrl = url
+            )
+            response.plot = "Direct Connection: $url"
+            response
         }
     }
 
@@ -100,11 +120,11 @@ class XtremexFtpProvider : MainAPI() {
             if (mediaFiles.isNotEmpty()) {
                 mediaFiles.take(10).forEachIndexed { idx, link ->
                     val fullUrl = if (link.startsWith("http")) link else fixUrl(link)
-                    callback(ExtractorLink(name, "Stream #${idx + 1}", fullUrl, data, Qualities.P1080.value, fullUrl.contains(".m3u8")))
+                    callback(ExtractorLink(this.name, "Stream #${idx + 1}", fullUrl, data, Qualities.P1080.value, fullUrl.contains(".m3u8")))
                 }
                 true
             } else {
-                callback(ExtractorLink(name, "Direct Stream", data, "", Qualities.P1080.value, data.contains(".m3u8")))
+                callback(ExtractorLink(this.name, "Direct Stream", data, "", Qualities.P1080.value, data.contains(".m3u8")))
                 true
             }
         } catch (e: Exception) { false }
