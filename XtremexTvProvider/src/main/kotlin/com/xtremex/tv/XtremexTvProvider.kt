@@ -1,4 +1,3 @@
-
 package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
@@ -54,13 +53,19 @@ class XtremexTvProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         return tvServers.filter { it.name.contains(query, ignoreCase = true) }.map { server ->
-            LiveSearchResponse(server.name, server.url, this.name, TvType.Live)
+            LiveSearchResponse(
+                name = server.name,
+                url = server.url,
+                apiName = this.name,
+                type = TvType.Live
+            )
         }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val server = tvServers.find { it.url == url }
-        return newLiveStreamLoadResponse(server?.name ?: "BDIX Live TV", url, TvType.Live) {
+        // এখানে TvType.Live সরিয়ে শুধু url রাখা হয়েছে, যার কারণে কম্পাইল এররটি হচ্ছিল
+        return newLiveStreamLoadResponse(server?.name ?: "BDIX Live TV", url) {
             this.plot = "Direct BDIX Local TV Stream via Xtreme'x Network."
         }
     }
