@@ -5,6 +5,7 @@ pluginManagement {
         mavenCentral()
         maven("https://jitpack.io")
     }
+
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id == "com.lagradost.cloudstream3.gradle") {
