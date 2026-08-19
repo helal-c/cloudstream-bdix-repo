@@ -2,7 +2,6 @@ package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.app
 
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
@@ -35,7 +34,7 @@ class XtremexTvProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val categories = tvServers.groupBy { it.category }
+        val categories = tvServers.groupBy { serverObj -> serverObj.category }
         val homeLists = categories.map { (catName, servers) ->
             val responses = servers.map { server ->
                 LiveSearchResponse(
@@ -52,7 +51,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        return tvServers.filter { it.name.contains(query, ignoreCase = true) }.map { server ->
+        return tvServers.filter { serverObj -> serverObj.name.contains(query, ignoreCase = true) }.map { server ->
             LiveSearchResponse(
                 name = server.name,
                 url = server.url,
@@ -64,7 +63,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val server = tvServers.find { it.url == url }
+        val server = tvServers.find { serverObj -> serverObj.url == url }
         val title = server?.name ?: "BDIX Live TV"
         
         val response = LiveStreamLoadResponse(
@@ -77,22 +76,64 @@ class XtremexTvProvider : MainAPI() {
         return response
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
         return try {
             val doc = app.get(data, timeout = 5).document
-            val directStream = doc.selectFirst("video source")?.attr("src") ?: doc.selectFirst("video")?.attr("src") ?: doc.html().substringAfter("source: '").substringBefore("'")
-            
-            if (directStream.isNullOrBlank()) {
-                callback(ExtractorLink(this.name, this.name + " Direct Link", data, data, Qualities.P1080.value, data.contains(".m3u8")))
+
+            val directStream = doc.selectFirst("video source")?.attr("src")
+                ?: doc.selectFirst("video")?.attr("src")
+                ?: doc.html().substringAfter("source: '", "").substringBefore("'")
+
+            if (directStream.isBlank()) {
+                callback(
+                    newExtractorLink(
+                        source = this@XtremexTvProvider.name,
+                        name = "${this@XtremexTvProvider.name} Direct Link",
+                        url = data
+                    ) {
+                        referer = data
+                        quality = Qualities.P1080.value
+                    }
+                )
                 return true
             }
-            
-            val finalUrl = if (directStream.startsWith("http")) directStream else if (directStream.startsWith("//")) "https:$directStream" else "$data${if (data.endsWith("/")) "" else "/"}${directStream.removePrefix("/")}"
 
-            callback(ExtractorLink(this.name, this.name + " Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
+            val finalUrl = when {
+                directStream.startsWith("http://") || directStream.startsWith("https://") -> directStream
+                directStream.startsWith("//") -> "https:$directStream"
+                else -> java.net.URI(data).resolve(directStream).toString()
+            }
+
+            callback(
+                newExtractorLink(
+                    source = this@XtremexTvProvider.name,
+                    name = "${this@XtremexTvProvider.name} Stream",
+                    url = finalUrl
+                ) {
+                    referer = data
+                    quality = Qualities.P1080.value
+                    isM3u8 = finalUrl.contains(".m3u8")
+                }
+            )
             true
+
         } catch (e: Exception) {
-            callback(ExtractorLink(this.name, this.name + " Direct Link", data, "", Qualities.P1080.value, data.contains(".m3u8")))
+            callback(
+                newExtractorLink(
+                    source = this@XtremexTvProvider.name,
+                    name = "${this@XtremexTvProvider.name} Direct Link",
+                    url = data
+                ) {
+                    referer = data
+                    quality = Qualities.P1080.value
+                    isM3u8 = data.contains(".m3u8")
+                }
+            )
             true
         }
     }
