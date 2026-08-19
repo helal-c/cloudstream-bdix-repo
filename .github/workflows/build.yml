@@ -10,6 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # এই পারমিশনটি builds ব্রাঞ্চে ফাইল পুশ করতে সাহায্য করবে
+    permissions:
+      contents: write 
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -22,6 +26,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5' # ম্যানুয়াল ফাইল তৈরির জন্য এটি জরুরি
 
       - name: Build Plugins and Generate repo.json
         run: gradle make
