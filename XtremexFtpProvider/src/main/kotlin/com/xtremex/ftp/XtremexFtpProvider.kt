@@ -1,6 +1,8 @@
 package com.xtremex.ftp
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
 
@@ -131,7 +133,6 @@ class XtremexFtpProvider : MainAPI() {
             if (mediaFiles.isNotEmpty()) {
                 var idx = 1
                 for (link in mediaFiles.take(10)) {
-                    // fixUrl সরানো হয়েছে এবং ম্যানুয়াল লিংক তৈরি করা হয়েছে
                     val fullUrl = if (link.startsWith("http")) link else if (link.startsWith("//")) "https:$link" else "$data${if (data.endsWith("/")) "" else "/"}${link.removePrefix("/")}"
                     callback(
                         ExtractorLink(
