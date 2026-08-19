@@ -1,6 +1,8 @@
 package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
 
@@ -87,7 +89,6 @@ class XtremexTvProvider : MainAPI() {
                 return true
             }
             
-            // fixUrl সরানো হয়েছে এবং ম্যানুয়াল লিংক তৈরি করা হয়েছে
             val finalUrl = if (directStream.startsWith("http")) directStream else if (directStream.startsWith("//")) "https:$directStream" else "$data${if (data.endsWith("/")) "" else "/"}${directStream.removePrefix("/")}"
 
             callback(ExtractorLink(this.name, this.name + " Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
