@@ -1,13 +1,18 @@
 plugins {
-    id("com.android.library") version "8.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
-    id("com.lagradost.cloudstream3.gradle") version "0.1.0" apply false
-}
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
+    id("com.android.library")
+    id("kotlin-android")
+    id("com.lagradost.cloudstream3.gradle")
 }
 
+cloudstream {
+    // এখানে আপনার গিটহাব ইউজারনেম helal-c বসানো হয়েছে
+    setRepoUrl("https://raw.githubusercontent.com/helal-c/cloudstream-bdix-repo/builds")
+}
+
+android {
+    namespace = "com.xtremex.tv"
+    compileSdk = 34
+    defaultConfig {
+        minSdk = 21
+    }
+}
