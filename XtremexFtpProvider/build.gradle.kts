@@ -4,13 +4,6 @@ plugins {
     id("com.lagradost.cloudstream3.gradle")
 }
 
-cloudstream {
-    name = "XtremeX BDIX"
-    description = "BDIX FTP Provider by Xtreme'x"
-    versionCode = 1
-    authors = listOf("Xtreme'x")
-}
-
 android {
     namespace = "com.xtremex.ftp"
     compileSdk = 34
