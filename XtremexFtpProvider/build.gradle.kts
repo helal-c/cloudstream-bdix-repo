@@ -4,6 +4,13 @@ plugins {
     id("com.lagradost.cloudstream3.gradle")
 }
 
+cloudstream {
+    name = "XtremeX BDIX"
+    description = "BDIX FTP Provider by Xtreme'x"
+    versionCode = 1
+    authors = listOf("Xtreme'x")
+}
+
 android {
     namespace = "com.xtremex.ftp"
     compileSdk = 34
@@ -20,4 +27,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+dependencies {
+    compileOnly("com.github.recloudstream:cloudstream:master-SNAPSHOT")
 }
