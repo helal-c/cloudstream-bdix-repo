@@ -45,9 +45,9 @@ subprojects {
 
     cloudstream {
         setRepo(
-            System.getenv("GITHUB_REPOSITORY")
-                ?: "https://github.com/user/repo"
-        )
+    System.getenv("GITHUB_REPOSITORY")
+        ?: "helal-c/cloudstream-bdix-repo"
+)
     }
 
     android {
