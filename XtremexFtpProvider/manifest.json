@@ -1,1 +1,10 @@
 
+{
+  "name": "Xtreme'x BDIX",
+  "pluginClassName": "com.xtremex.ftp.XtremexFtpPlugin",
+  "authors": ["Xtreme'x Communication"],
+  "description": "All-in-one BDIX FTP, Netflix Mirror & Anime portal with 40+ servers (Wow FTP, Aniwatch, GogoAnime, NetMirror, Banglaplex, Circle, etc).",
+  "version": 1,
+  "types": ["Movie", "TvSeries", "Anime"],
+  "iconUrl": "https://raw.githubusercontent.com/google/material-design-icons/master/png/device/storage/materialicons/48dp/2x/baseline_storage_black_48dp.png"
+}
