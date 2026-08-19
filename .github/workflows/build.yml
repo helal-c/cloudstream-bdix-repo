@@ -27,11 +27,15 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.5'
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Check Gradle Version
+        run: ./gradlew --version
 
       - name: Build Plugins and Generate repo.json
-        run: gradle make
+        run: ./gradlew make
 
       - name: Check Build Output
         run: |
