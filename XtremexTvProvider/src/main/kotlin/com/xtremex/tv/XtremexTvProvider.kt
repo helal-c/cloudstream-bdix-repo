@@ -41,7 +41,7 @@ class XtremexTvProvider : MainAPI() {
                 LiveSearchResponse(
                     name = server.name,
                     url = server.url,
-                    apiName = this.name,
+                    apiName = this@XtremexTvProvider.name,
                     type = TvType.Live,
                     posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
                 )
@@ -56,18 +56,25 @@ class XtremexTvProvider : MainAPI() {
             LiveSearchResponse(
                 name = server.name,
                 url = server.url,
-                apiName = this.name,
-                type = TvType.Live
+                apiName = this@XtremexTvProvider.name,
+                type = TvType.Live,
+                posterUrl = "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/tv/materialicons/48dp/2x/baseline_tv_black_48dp.png"
             )
         }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val server = tvServers.find { it.url == url }
-        // এখানে TvType.Live সরিয়ে শুধু url রাখা হয়েছে, যার কারণে কম্পাইল এররটি হচ্ছিল
-        return newLiveStreamLoadResponse(server?.name ?: "BDIX Live TV", url) {
-            this.plot = "Direct BDIX Local TV Stream via Xtreme'x Network."
-        }
+        val title = server?.name ?: "BDIX Live TV"
+        
+        val response = LiveStreamLoadResponse(
+            name = title,
+            url = url,
+            apiName = this@XtremexTvProvider.name,
+            dataUrl = url
+        )
+        response.plot = "Direct BDIX Local TV Stream via Xtreme'x Network."
+        return response
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
@@ -76,10 +83,10 @@ class XtremexTvProvider : MainAPI() {
             val directStream = doc.selectFirst("video source")?.attr("src") ?: doc.selectFirst("video")?.attr("src") ?: doc.html().substringAfter("source: '").substringBefore("'")
             val finalUrl = if (directStream.startsWith("http")) directStream else fixUrl(directStream)
             
-            callback(ExtractorLink(name, "$name Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
+            callback(ExtractorLink(this.name, this.name + " Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
             true
         } catch (e: Exception) {
-            callback(ExtractorLink(name, "$name Direct Link", data, "", Qualities.P1080.value, data.contains(".m3u8")))
+            callback(ExtractorLink(this.name, this.name + " Direct Link", data, "", Qualities.P1080.value, data.contains(".m3u8")))
             true
         }
     }
