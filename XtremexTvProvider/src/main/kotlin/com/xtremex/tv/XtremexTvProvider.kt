@@ -1,7 +1,8 @@
 package com.xtremex.tv
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.Qualities
 
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
@@ -34,7 +35,7 @@ class XtremexTvProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val categories = tvServers.groupBy { it.category }
+        val categories = tvServers.groupBy { serverObj -> serverObj.category }
         val homeLists = categories.map { (catName, servers) ->
             val responses = servers.map { server ->
                 LiveSearchResponse(
@@ -51,7 +52,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        return tvServers.filter { it.name.contains(query, ignoreCase = true) }.map { server ->
+        return tvServers.filter { serverObj -> serverObj.name.contains(query, ignoreCase = true) }.map { server ->
             LiveSearchResponse(
                 name = server.name,
                 url = server.url,
@@ -63,7 +64,7 @@ class XtremexTvProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val server = tvServers.find { it.url == url }
+        val server = tvServers.find { serverObj -> serverObj.url == url }
         val title = server?.name ?: "BDIX Live TV"
         
         val response = LiveStreamLoadResponse(
@@ -80,11 +81,14 @@ class XtremexTvProvider : MainAPI() {
         return try {
             val doc = app.get(data, timeout = 5).document
             val directStream = doc.selectFirst("video source")?.attr("src") ?: doc.selectFirst("video")?.attr("src") ?: doc.html().substringAfter("source: '").substringBefore("'")
+            
             if (directStream.isNullOrBlank()) {
                 callback(ExtractorLink(this.name, this.name + " Direct Link", data, data, Qualities.P1080.value, data.contains(".m3u8")))
                 return true
             }
-            val finalUrl = if (directStream.startsWith("http")) directStream else fixUrl(directStream)
+            
+            // fixUrl সরানো হয়েছে এবং ম্যানুয়াল লিংক তৈরি করা হয়েছে
+            val finalUrl = if (directStream.startsWith("http")) directStream else if (directStream.startsWith("//")) "https:$directStream" else "$data${if (data.endsWith("/")) "" else "/"}${directStream.removePrefix("/")}"
 
             callback(ExtractorLink(this.name, this.name + " Stream", if (finalUrl.contains(".m3u8")) finalUrl else data, data, Qualities.P1080.value, finalUrl.contains(".m3u8")))
             true
