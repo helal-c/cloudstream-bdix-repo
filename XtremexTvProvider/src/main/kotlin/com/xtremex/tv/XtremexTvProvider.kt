@@ -1,8 +1,10 @@
 package com.xtremex.tv
 
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 
+@CloudstreamPlugin
 class XtremexTvProvider : MainAPI() {
     override var mainUrl = "https://xtreamcommunication.vercel.app"
     override var name = "Xtreme'x Live TV"
