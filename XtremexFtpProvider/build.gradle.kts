@@ -1,29 +1,23 @@
-plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("com.lagradost.cloudstream3.gradle")
+version = 1
+
+cloudstream {
+    description = "Xtreme'x BDIX FTP & Media Servers"
+    authors = listOf("Helal Uddin")
+    status = 1
+    tvTypes = listOf(
+        "Movie",
+        "TvSeries",
+        "Anime"
+    )
+    language = "bn"
 }
 
 android {
     namespace = "com.xtremex.ftp"
-    compileSdk = 34
+
+    compileSdk = 35
+
     defaultConfig {
         minSdk = 21
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
-        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9)
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9)
-    }
-}
-
-dependencies {
-    compileOnly("com.github.recloudstream.cloudstream:library:-SNAPSHOT")
 }
