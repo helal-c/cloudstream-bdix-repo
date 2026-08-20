@@ -37,8 +37,9 @@ jobs:
         run: gradle --version
 
       - name: Build Plugins and Generate repo.json
-        run: gradle make
-
+        run: |
+          mkdir -p build
+          gradle make
       - name: Check Build Output
         run: |
           echo "===== BUILD DIRECTORY ====="
