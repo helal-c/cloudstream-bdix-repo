@@ -7,7 +7,17 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
+
 rootProject.name = "cloudstream-bdix-repo"
 
-include(":XtremexTvProvider")
 include(":XtremexFtpProvider")
+include(":XtremexTvProvider")
