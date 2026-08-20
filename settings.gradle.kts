@@ -1,21 +1,14 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         google()
         mavenCentral()
+        gradlePluginPortal()
         maven("https://jitpack.io")
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "com.lagradost.cloudstream3.gradle") {
-                useModule("com.github.recloudstream:gradle:master-SNAPSHOT")
-            }
-        }
     }
 }
 
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
@@ -23,7 +16,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "XtremeXBDIXPlugins"
+rootProject.name = "cloudstream-bdix-repo"
 
 include(":XtremexTvProvider")
 include(":XtremexFtpProvider")
