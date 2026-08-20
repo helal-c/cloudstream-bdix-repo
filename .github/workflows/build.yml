@@ -1,10 +1,9 @@
-name: Build Plugins & Generate Repo
+name: Build CloudStream Plugins
 
 on:
   push:
     branches:
       - main
-      - master
 
   workflow_dispatch:
 
@@ -12,45 +11,67 @@ permissions:
   contents: write
 
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
-      - name: Setup Gradle 8.9
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
 
-      - name: Check Java Version
-        run: java -version
-
-      - name: Check Gradle Version
-        run: gradle --version
-
-      - name: Build Plugins and Generate repo.json
+      - name: Build Plugins
         run: |
-          mkdir -p build
-          gradle make
-      - name: Check Build Output
+          chmod +x ./gradlew
+          ./gradlew clean
+          ./gradlew make
+          ./gradlew makePluginsJson
+
+      - name: Show Build Output
         run: |
-          echo "===== BUILD DIRECTORY ====="
-          ls -la build || true
+          echo "===== BUILD ====="
+          find . -type f \
+            \( -name "*.cs3" -o -name "plugins.json" \) \
+            -print
 
-          echo "===== BUILD FILES ====="
-          find build -maxdepth 3 -type f -print || true
+      - name: Prepare Repository
+        run: |
 
-      - name: Deploy to Builds Branch
+          rm -rf deploy
+
+          mkdir -p deploy
+
+          cp repo.json deploy/repo.json
+
+          find . -type f \
+            -name "*.cs3" \
+            -exec cp {} deploy/ \;
+
+          find . -type f \
+            -name "plugins.json" \
+            -exec cp {} deploy/plugins.json \;
+
+          echo "===== DEPLOY ====="
+
+          ls -lah deploy
+
+      - name: Deploy Builds Branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: builds
-          folder: build
+          folder: deploy
           clean: true
+          single-commit: true
