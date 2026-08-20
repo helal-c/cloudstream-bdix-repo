@@ -1,0 +1,8 @@
+{
+  "name": "Xtreme'x BDIX",
+  "description": "Xtreme'x BDIX CloudStream extensions",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/helal-c/cloudstream-bdix-repo/builds/plugins.json"
+  ]
+}
