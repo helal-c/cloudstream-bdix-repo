@@ -1,7 +1,7 @@
 plugins {
     id("com.android.library") version "8.5.2" apply false
     id("org.jetbrains.kotlin.android") version "1.9.24" apply false
-    id("com.lagradost.cloudstream3.gradle")
+    id("com.lagradost.cloudstream3.gradle") apply false
 }
 
 allprojects {
@@ -12,6 +12,6 @@ allprojects {
     }
 }
 
-task<Delete>("clean") {
+tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
