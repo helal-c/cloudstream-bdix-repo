@@ -1,8 +1,10 @@
 package com.xtremex.ftp
 
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 
+@CloudstreamPlugin
 class XtremexFtpProvider : MainAPI() {
     override var mainUrl = "https://xtremexbd.com"
     override var name = "Xtreme'x BDIX"
